@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//oi mamae
-
 //Usado para busca de TIDs
 #define MAXTID 128
 #define STACK_SIZE 16384
