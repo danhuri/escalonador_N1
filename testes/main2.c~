@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "../include/libsisop.h"
+
+#define handle_error(msg) \
+           do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define debug(msg) printf(msg);printf("\n")
+
+void *func2(void *arg);
+
+void *func1(void *arg)
+{
+    int *pi=(int*)arg;
+    printf("func1: started\n");
+    printf("func1: %d\n",*(int*)arg);
+    
+    //Testando comunicacao entre processos, atraves da variavel i
+    for ( ; *pi<10; (*pi)++) {
+	printf ("func1 i = %d\n",*pi);
+        mproc_yield();
+    }
+
+    printf("func1: %d - returning\n",*(int*)arg);
+    return NULL;
+}
+
+void *func2(void *arg)
+{
+    int *pi=(int*)arg;
+    printf("func2: started\n");
+    printf("func2: %d\n",*(int*)arg);
+    for ( ; *pi<10; (*pi)++) {
+	printf ("func2 i = %d \n",*pi);
+        mproc_yield();
+    }
+    printf("func2: %d - returning\n",*(int*)arg);
+    return NULL;
+}
+
+
+
+int main(void)
+{      
+    int arg=0, pid1, pid2;
+    libsisop_init();    
+    
+    pid1 = mproc_create(func1,&arg);
+    pid2 = mproc_create(func2,&arg);
+
+    if (pid1==-1 )
+	handle_error("Erro ao criar processo");
+    
+    mproc_join(pid1);
+    mproc_join(pid2);
+        
+    printf("main: exiting\n");
+    return 0;
+}
+
+
+

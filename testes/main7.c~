@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "../include/uthread.h"
+
+#define handle_error(msg) \
+           do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define debug(msg) printf(msg);printf("\n")
+
+int pidglobal[128];
+int erro[128] = {0};
+
+void *func1(void *ppid)
+{
+    int pid = *(int*)ppid;
+    printf("Processo %d esperando processo: %d \n", pidglobal[pid],pid);
+    if (mproc_join(pid)==-1 && mproc_deadlock()) {
+        printf("Deadlock\n");
+        erro[pidglobal[pid]]=1;
+        return NULL;
+    }
+
+    if (erro[pid]) {
+        erro[pidglobal[pid]]=1;
+        printf("Erro no processo: %d , processo %d abortado! \n", pid, pidglobal[pid]);
+    }
+    else 
+        printf("Fim Normal do processo: %d \n", pidglobal[pid]);
+
+    return NULL;
+}
+
+int main(void)
+{      
+    int pid[3];
+    int val[3];
+    libsisop_init();    
+   
+
+    pid[0] = mproc_create(func1,&val[0]);
+    pid[1] = mproc_create(func1,&val[1]);
+    pid[2] = mproc_create(func1,&val[2]);
+
+    //val contem o pid do processo com o qual deve ser sincronizado
+    val[0]=pid[1];
+    val[1]=pid[2];
+    val[2]=pid[0];
+
+    //pidglobal contem o inverso do 'val', o pid do proc. que fez a sincronização
+    pidglobal[pid[0]]=pid[2];
+    pidglobal[pid[1]]=pid[0];
+    pidglobal[pid[2]]=pid[1];
+
+
+    if (mproc_join(pid[0])==-1)
+        handle_error("Erro de sincronização");
+    
+    
+    printf("main: exiting\n");
+    return 0;
+    
+}
+

@@ -1,0 +1,22 @@
+#include "../include/uthread.h" /*considera que fonte está no diretório testes(seção 8) */
+
+void *func0(void *arg) {
+
+    \*corpo da função func0 *\
+
+}
+void *func1(void *arg) {
+\*corpo da função func1 *\
+}
+int main(int argc, char *argv[]) {
+int id0, id1;
+....
+libuthread_init();
+....
+id0 = uthread_create(func0, &i);
+id1 = uthread_create(func1, &i);
+.....
+uthread_join(id0);
+uthread_jo
+
+

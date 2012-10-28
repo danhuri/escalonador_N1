@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "../include/uthread.h"
+
+#define handle_error(msg) \
+           do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define debug(msg) printf(msg);printf("\n")
+
+void *func2(void *arg);
+
+void *func1(void *arg)
+{
+    int i, tid2;
+    printf("func1: started\n");
+    printf("func1: %d\n",*(int*)arg);
+    
+    tid2 = uthread_create(func2, NULL);
+    if (tid2==-1 )
+	handle_error("Erro ao criar thread");
+      
+    for (i=0; i<5; i++) {
+	printf ("func1 i = %d\n",i);
+        uthread_yield();
+    }
+
+    uthread_join(tid2);
+
+    printf("func1: %d - returning\n",*(int*)arg);
+    return NULL;
+}
+
+void *func2(void *arg)
+{
+    int i;
+    printf("func2: started\n");
+    for (i=0; i<10; i++) {
+	printf ("func2 i = %d \n",i);
+        uthread_yield();
+    }
+    printf("func2:  returning\n");
+    return NULL;
+}
+
+
+
+int main(void)
+{      
+    int arg=199, tid1;
+    libuthread_init();    
+    
+    tid1 = uthread_create(func1,&arg);
+ 
+    if (tid1==-1 )
+	handle_error("Erro ao criar thread");
+    
+    uthread_join(tid1);
+        
+    printf("main: exiting\n");
+    return 0;
+}
+

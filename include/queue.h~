@@ -1,0 +1,37 @@
+#ifndef __mproc_queue
+#define __mproc_queue
+
+#include <ucontext.h>
+
+
+struct s_queue_elem {
+    struct s_mproc_t *proc;
+    struct s_queue_elem *next;
+};
+typedef struct s_queue_elem queue_elem;
+
+typedef struct {
+    queue_elem *first;
+    queue_elem *last;    
+} mproc_queue;
+
+enum state_e {
+    ready=1,
+    running,
+    blocked
+};
+
+struct s_mproc_t {
+    int pid;
+    ucontext_t context;
+    enum state_e state;
+    mproc_queue waiting_queue;
+};
+typedef struct s_mproc_t mproc_t;
+
+
+void init_queue(mproc_queue *queue);
+int enqueue(mproc_queue *queue, mproc_t *proc);
+mproc_t * dequeue(mproc_queue *queue);
+
+#endif
